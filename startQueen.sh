@@ -28,4 +28,4 @@ if [ $# -gt 1 ]; then
 fi
 
 echo "starting queen ..."
-./dist/build/Beemaster/Beemaster "queen" $ip $port
+./dist/build/Beekeeper/Beekeeper "queen" $ip $port

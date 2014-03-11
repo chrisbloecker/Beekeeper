@@ -35,6 +35,6 @@ fi
 
 for i in $(seq 1 $drones); do
   echo "starting drone "${i}"..."
-  ./dist/build/Beemaster/Beemaster "drone" $ip $port &
+  ./dist/build/Beekeeper/Beekeeper "drone" $ip $port &
   port=$(($port+1))
 done
