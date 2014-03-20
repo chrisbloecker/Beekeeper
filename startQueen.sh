@@ -14,6 +14,10 @@ ip=$(hostname -I)
 
 if [ $# -gt 1 ]; then
   case $1 in
+    --ip)
+      shift
+      ip=$1
+    ;;
     -p | --port)
       shift
       port=$1

@@ -20,6 +20,10 @@ if [ $# -gt 1 ]; then
       shift
       drones=$1
     ;;
+    --ip)
+      shift
+      ip=$1
+    ;;
     -p | --port)
       shift
       port=$1
