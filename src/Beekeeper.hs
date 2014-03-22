@@ -4,10 +4,10 @@ module Main
 import System.Environment (getArgs)
 
 import Control.Concurrent.MVar
-
 import Control.Distributed.Process.Backend.SimpleLocalnet
 import Control.Distributed.Process.Node hiding (newLocalNode)
 
+import Data.Time      (getCurrentTime, diffUTCTime)
 import Data.Text.Lazy (pack, unpack)
 
 import Hive.Queen
@@ -16,6 +16,8 @@ import Hive.Client
 import Hive.Types
 
 import Hive.RemoteTable (remoteTable)
+
+import qualified Data.Text.Lazy.IO as IOText (readFile)
 
 -------------------------------------------------------------------------------
 
@@ -56,5 +58,24 @@ main = do
       runProcess node $ solveRequest context (Problem TSP (Instance $ pack problem)) mvar 5000000
       putStrLn . unpack . unSolution =<< takeMVar mvar
 
+    ["cli", host, port, filepath] -> do
+      context <- initializeBackend host port rt
+      node    <- newLocalNode context
+      mvar    <- newEmptyMVar
+
+      fileContent <- IOText.readFile filepath
+      start <- getCurrentTime
+      runProcess node $ solveRequest context (Problem SSSP (Instance fileContent)) mvar 120000000
+      solution <- takeMVar mvar
+      end <- getCurrentTime
+      case solution of
+        Solution _ _   -> return ()
+        NoSolution     -> putStrLn "Sorry, we couldn't find a solution."
+        InvalidInput   -> putStrLn "Your input is invalid."
+        TimeoutReached -> putStrLn "Timeout Reached."
+        NotImplemented -> putStrLn "This is not yet implemented."
+
+      putStrLn $ "This took " ++ show (diffUTCTime end start)
+      
     other ->
       putStrLn $ "Your arguments are invalid: " ++ show other

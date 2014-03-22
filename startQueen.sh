@@ -12,7 +12,7 @@ exit $1
 port=42000
 ip=$(hostname -I)
 
-if [ $# -gt 1 ]; then
+while [ $# -gt 1 ]; do
   case $1 in
     --ip)
       shift
@@ -29,7 +29,8 @@ if [ $# -gt 1 ]; then
       help 1
     ;;
   esac
-fi
+  shift
+done
 
 echo "starting queen ..."
 ./dist/build/Beekeeper/Beekeeper "queen" $ip $port

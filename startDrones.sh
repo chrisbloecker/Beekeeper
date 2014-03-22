@@ -14,7 +14,7 @@ drones=$(nproc)
 port=50000
 ip=$(hostname -I)
 
-if [ $# -gt 1 ]; then
+while [ $# -gt 1 ]; do
   case $1 in
     -d | --drones)
       shift
@@ -35,7 +35,8 @@ if [ $# -gt 1 ]; then
       help 1
     ;;
   esac
-fi
+  shift
+done
 
 for i in $(seq 1 $drones); do
   echo "starting drone "${i}"..."
