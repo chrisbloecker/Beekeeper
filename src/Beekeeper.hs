@@ -48,14 +48,14 @@ main = do
       context <- initializeBackend host port rt
       node    <- newLocalNode context
 
-      runProcess node $ runDrone context
+      runProcess node $ runDrone context (milliseconds 500)
     
     ["client", host, port, problem] -> do
       context <- initializeBackend host port rt
       node    <- newLocalNode context
       mvar    <- newEmptyMVar
 
-      runProcess node $ solveRequest context (Problem TSP (Instance $ pack problem)) mvar 5000000
+      runProcess node $ solveRequest context (Problem TSP (Instance $ pack problem)) mvar (milliseconds 500) (minutes 1)
       putStrLn . unpack . unSolution =<< takeMVar mvar
 
     ["cli", host, port, filepath] -> do
@@ -65,7 +65,7 @@ main = do
 
       fileContent <- IOText.readFile filepath
       start <- getCurrentTime
-      runProcess node $ solveRequest context (Problem SSSP (Instance fileContent)) mvar 120000000
+      runProcess node $ solveRequest context (Problem SSSP (Instance fileContent)) mvar (milliseconds 500) (minutes 2)
       solution <- takeMVar mvar
       end <- getCurrentTime
       case solution of
