@@ -4,8 +4,9 @@ module Main
 import System.Environment (getArgs)
 
 import Control.Concurrent.MVar
-import Control.Distributed.Process.Backend.SimpleLocalnet
-import Control.Distributed.Process.Node hiding (newLocalNode)
+--import Control.Distributed.Process.Backend.SimpleLocalnet
+import Control.Distributed.Process.Node
+import Network.Transport.TCP
 
 import Data.Time      (getCurrentTime, diffUTCTime)
 import Data.Text.Lazy (pack, unpack)
@@ -32,40 +33,40 @@ main = do
       putStrLn "'queen' host port"
       putStrLn "  to start a queen on host using port"
       putStrLn ""
-      putStrLn "'drone' host port"
+      putStrLn "'drone' host port queenAddress"
       putStrLn "  to start a drone on host using port"
       putStrLn ""
       putStrLn "'client host port problem"
       putStrLn "  to start a client on host using port, requestion to solve Problem"
 
     ["queen", host, port] -> do
-      context <- initializeBackend host port rt
-      node    <- newLocalNode context
+      Right transport <- createTransport host port defaultTCPParameters
+      node    <- newLocalNode transport rt
 
-      runProcess node $ runQueen context
+      runProcess node runQueen
 
-    ["drone", host, port] -> do
-      context <- initializeBackend host port rt
-      node    <- newLocalNode context
+    ["drone", host, port, queenAddress] -> do
+      Right transport <- createTransport host port defaultTCPParameters
+      node    <- newLocalNode transport rt
 
-      runProcess node $ runDrone context (milliseconds 500)
+      runProcess node $ runDrone queenAddress
     
-    ["client", host, port, problem] -> do
-      context <- initializeBackend host port rt
-      node    <- newLocalNode context
+    ["client", host, port, problem, queenAddress] -> do
+      Right transport <- createTransport host port defaultTCPParameters
+      node    <- newLocalNode transport rt
       mvar    <- newEmptyMVar
 
-      runProcess node $ solveRequest context (Problem TSP (Instance $ pack problem)) mvar (milliseconds 500) (minutes 1)
+      runProcess node $ solveRequest queenAddress (Problem TSP (Instance $ pack problem)) mvar (minutes 1)
       putStrLn . unpack . unSolution =<< takeMVar mvar
 
-    ["cli", host, port, filepath] -> do
-      context <- initializeBackend host port rt
-      node    <- newLocalNode context
+    ["cli", host, port, queenAddress, filepath] -> do
+      Right transport <- createTransport host port defaultTCPParameters
+      node    <- newLocalNode transport rt
       mvar    <- newEmptyMVar
 
       fileContent <- IOText.readFile filepath
       start <- getCurrentTime
-      runProcess node $ solveRequest context (Problem SSSP (Instance fileContent)) mvar (milliseconds 500) (minutes 2)
+      runProcess node $ solveRequest queenAddress (Problem SSSP (Instance fileContent)) mvar (minutes 2)
       solution <- takeMVar mvar
       end <- getCurrentTime
       case solution of
