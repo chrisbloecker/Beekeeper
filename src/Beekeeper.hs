@@ -72,7 +72,7 @@ main = do
 
       fileContent <- IOText.readFile filepath
       start       <- getCurrentTime
-      runProcess node $ solveRequest queenHost queenPort (Problem SSSP (Instance fileContent)) mvar (minutes 2)
+      runProcess node $ solveRequest queenHost queenPort (Problem SSSP (Instance fileContent)) mvar (minutes 5)
       handleSolution =<< takeMVar mvar
       end         <- getCurrentTime
 
