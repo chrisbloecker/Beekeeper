@@ -14,7 +14,7 @@ ip=$(hostname -I)
 
 while [ $# -gt 1 ]; do
   case $1 in
-    --ip)
+    -ip)
       shift
       ip=$1
     ;;
