@@ -13,40 +13,35 @@ Opts are those:
 exit $1
 }
 
-drones=$(nproc)
-port=50000
-ip=$(hostname -I)
-qip=$(hostname -I)
-qp=42000
+drones=`nproc`
+let port=50000
+ip=`hostname -I`
+qip=`hostname -I`
+let qp=42000
 
-while [ $# -gt 1 ]; do
+while [ $# -gt 0 ]; do
   case $1 in
     -d | --drones)
       shift
-      drones=$1
-    ;;
+      let drones=$1
+      ;;
     -ip | --ip)
       shift
-      ip=$1
-    ;;
+      let ip=$1
+      ;;
     -p | --port)
       shift
-      port=$1
-    ;;
+      let port=$1
+      ;;
     -qip | --queenip)
       shift
-      qip=$1
-    ;;
-    -qp | --queenport)
-      shift
-      qp=$1
-    ;;
+      let qp=$1
+      ;;
     -h | --help)
       help 0
-    ;;
+      ;;
     *)
-      help 1
-    ;;
+      help 1;;
   esac
   shift
 done

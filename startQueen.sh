@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 help()
 {
 echo "Usage: startQueen.sh <opts>
@@ -9,25 +10,24 @@ Opts are those:
 exit $1
 }
 
-port=42000
-ip=$(hostname -I)
+let port=42000
+ip=`hostname -I`
 
-while [ $# -gt 1 ]; do
+while [ $# -gt 0 ]; do
   case $1 in
     -ip)
       shift
-      ip=$1
-    ;;
+      let ip=$1
+      ;;
     -p | --port)
       shift
-      port=$1
-    ;;
+      let port=$1
+      ;;
     -h | --help)
       help 0
-    ;;
+      ;;
     *)
-      help 1
-    ;;
+      help 1;;
   esac
   shift
 done
