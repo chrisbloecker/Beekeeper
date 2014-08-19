@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                Beekeeper
-version:             0.1.1.2
+version:             0.2.0.0
 -- synopsis:            
 -- description:         
 license:             BSD3
@@ -23,8 +23,8 @@ executable Beekeeper
   build-depends:       base >=4.6 && <4.7,
                        text,
                        time,
-                       distributed-process >= 0.4 && < 0.5,
+                       distributed-process == 0.5.1,
                        network-transport-tcp,
-                       Hive >= 0.1.1.0
+                       Hive >= 0.2.0.0
   hs-source-dirs:      src
   default-language:    Haskell2010

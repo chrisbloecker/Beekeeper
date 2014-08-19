@@ -3,10 +3,10 @@
 
 help()
 {
-echo "Usage: startQueen.sh <opts>
+echo "Usage: startMaster.sh <opts>
 Opts are those:
     -h,  --help              : Print this message and exit
-    -p,  --port <number>     : Port of the first drone"
+    -p,  --port <number>     : Port of the master"
 exit $1
 }
 
@@ -32,5 +32,4 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-echo "starting queen ..."
-./dist/build/Beekeeper/Beekeeper "queen" $ip $port
+./dist/build/Beekeeper/Beekeeper "master" $ip $port

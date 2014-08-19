@@ -8,10 +8,10 @@ import Control.Distributed.Process.Node
 import Network.Transport.TCP
 
 import Data.Time      (getCurrentTime, diffUTCTime)
-import Data.Text.Lazy (pack, unpack)
+import Data.Text.Lazy (pack)
 
-import Hive.Queen  (runQueen)
-import Hive.Drone  (runDrone)
+import Hive.Master (runMaster)
+import Hive.Node   (runNode)
 import Hive.Client (solveRequest)
 import Hive.Types
 
@@ -21,10 +21,23 @@ import qualified Data.Text.Lazy.IO as IOText (readFile)
 
 -------------------------------------------------------------------------------
 
-mkNode :: String -> String -> IO LocalNode
+data Mode = INFO
+          | DEBUG
+  deriving (Show)
+
+-------------------------------------------------------------------------------
+
+mkNode :: String -> String -> IO (Maybe LocalNode)
 mkNode host port = do
-  Right transport <- createTransport host port defaultTCPParameters
-  newLocalNode transport (remoteTable initRemoteTable) -- ToDo: will this cause problems?
+  info "creating transport"
+  mTransport <- createTransport host port defaultTCPParameters
+  case mTransport of
+    Left err -> do
+      info $ show err
+      return Nothing
+    Right transport -> do
+      node <- newLocalNode transport (remoteTable initRemoteTable)
+      return $ Just node
 
 help :: IO ()
 help = do
@@ -46,37 +59,58 @@ handleSolution  InvalidInput   = putStrLn "Your input is invalid."
 handleSolution  TimeoutReached = putStrLn "Timeout Reached."
 handleSolution  NotImplemented = putStrLn "This is not yet implemented."
 
+out :: Mode -> String -> IO ()
+out m s = putStrLn $ "[" ++ show m ++ "] " ++ s
+
+info :: String -> IO ()
+info = out INFO
+
+debug :: String -> IO ()
+debug = out DEBUG
+
 main :: IO ()
 main = do
   args <- getArgs
   case args of
     ("help":_) -> help
 
-    ["queen", host, port] -> do
-      node <- mkNode host port
-      runProcess node runQueen
+    ["master", host, port] -> do
+      mNode <- mkNode host port
+      case mNode of
+        Nothing   -> info "can't create node"
+        Just node -> info "starting master" >> runProcess node runMaster
 
-    ["drone", host, port, queenHost, queenPort] -> do
-      node <- mkNode host port
-      runProcess node $ runDrone queenHost queenPort
+    ["node", host, port, masterHost, masterPort, workerCount] -> do
+      mNode <- mkNode host port
+      case mNode of
+        Nothing   -> info "can't create node"
+        Just node -> info "starting node" >> runProcess node (runNode masterHost masterPort (read workerCount :: Int))
     
-    ["client", host, port, problem, queenHost, queenPort] -> do
-      node <- mkNode host port
-      mvar <- newEmptyMVar
-      runProcess node $ solveRequest queenHost queenPort (Problem TSP (Instance $ pack problem)) mvar (minutes 1)
-      putStrLn . unpack . unSolution =<< takeMVar mvar
+    ["client", host, port, problem, masterHost, masterPort] -> do
+      mNode <- mkNode host port
+      case mNode of
+        Nothing   -> info "can't create node"
+        Just node -> do
+          mvar <- newEmptyMVar
+          runProcess node $ solveRequest masterHost masterPort (Problem TSP (Instance $ pack problem)) mvar
+          ticket <- takeMVar mvar
+          putStrLn . show $ ticket
 
     ["cli", host, port, queenHost, queenPort, filepath] -> do
-      node <- mkNode host port
-      mvar <- newEmptyMVar
+      mNode <- mkNode host port
+      case mNode of
+        Nothing   -> info "can't create node"
+        Just node -> do
+          mvar <- newEmptyMVar
+          
+          fileContent <- IOText.readFile filepath
+          
+          start       <- getCurrentTime
+          runProcess node $ solveRequest queenHost queenPort (Problem SSSP (Instance fileContent)) mvar
+          _ticket <- takeMVar mvar
+          end         <- getCurrentTime
 
-      fileContent <- IOText.readFile filepath
-      start       <- getCurrentTime
-      runProcess node $ solveRequest queenHost queenPort (Problem SSSP (Instance fileContent)) mvar (minutes 5)
-      handleSolution =<< takeMVar mvar
-      end         <- getCurrentTime
-
-      putStrLn $ "This took " ++ show (diffUTCTime end start)
+          putStrLn $ "This took " ++ show (diffUTCTime end start)
       
     other ->
       putStrLn $ "Your arguments are invalid: " ++ show other
