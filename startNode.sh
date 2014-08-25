@@ -27,19 +27,19 @@ while [ $# -gt 0 ]; do
       ;;
     -ip | --ip)
       shift
-      let ip=$1
+      ip=$1
       ;;
     -p | --port)
       shift
-      let port=$1
+      port=$1
       ;;
     -mip | --masterip)
       shift
-      let qp=$1
+      mip=$1
       ;;
     -mp | --masterport)
       shift
-      let mp=$1
+      mp=$1
       ;;
     -h | --help)
       help 0

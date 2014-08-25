@@ -17,7 +17,7 @@ while [ $# -gt 0 ]; do
   case $1 in
     -ip)
       shift
-      let ip=$1
+      ip=$1
       ;;
     -p | --port)
       shift

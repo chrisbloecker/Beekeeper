@@ -53,7 +53,7 @@ help = do
   putStrLn "  to start a client on host using port, requestion to solve Problem"
 
 handleSolution :: Solution -> IO ()
-handleSolution (Solution _ _)  = return ()
+handleSolution (Solution _)    = return ()
 handleSolution  NoSolution     = putStrLn "Sorry, we couldn't find a solution."
 handleSolution  InvalidInput   = putStrLn "Your input is invalid."
 handleSolution  TimeoutReached = putStrLn "Timeout Reached."
@@ -92,7 +92,7 @@ main = do
         Nothing   -> info "can't create node"
         Just node -> do
           mvar <- newEmptyMVar
-          runProcess node $ solveRequest masterHost masterPort (Problem TSP (Instance $ pack problem)) mvar
+          runProcess node $ solveRequest masterHost masterPort (Problem ARITH (Instance $ pack problem)) mvar
           ticket <- takeMVar mvar
           putStrLn . show $ ticket
 
@@ -111,6 +111,6 @@ main = do
           end         <- getCurrentTime
 
           putStrLn $ "This took " ++ show (diffUTCTime end start)
-      
+
     other ->
       putStrLn $ "Your arguments are invalid: " ++ show other
