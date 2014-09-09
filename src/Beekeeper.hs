@@ -92,7 +92,7 @@ main = do
         Nothing   -> info "can't create node"
         Just node -> do
           mvar <- newEmptyMVar
-          runProcess node $ solveRequest masterHost masterPort (Problem ARITH (Instance $ pack problem)) mvar
+          runProcess node $ solveRequest masterHost masterPort (Problem ARITH (pack problem)) mvar
           ticket <- takeMVar mvar
           putStrLn . show $ ticket
 
@@ -106,7 +106,7 @@ main = do
           fileContent <- IOText.readFile filepath
           
           start       <- getCurrentTime
-          runProcess node $ solveRequest queenHost queenPort (Problem SSSP (Instance fileContent)) mvar
+          runProcess node $ solveRequest queenHost queenPort (Problem SSSP fileContent) mvar
           _ticket <- takeMVar mvar
           end         <- getCurrentTime
 
