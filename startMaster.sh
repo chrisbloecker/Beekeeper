@@ -32,4 +32,4 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-./dist/build/Beekeeper/Beekeeper "master" $ip $port
+./dist/build/Beekeeper/Beekeeper +RTS -N$(nproc) -RTS "master" $ip $port
